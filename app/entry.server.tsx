@@ -1,9 +1,7 @@
 import { renderToString } from "react-dom/server";
 import { RemixServer } from "remix";
 import type { EntryContext } from "remix";
-import { getSSRStyles, createStylesServer } from "@mantine/ssr";
-
-const server = createStylesServer();
+import { injectStylesIntoStaticMarkup } from "@mantine/ssr";
 
 export default function handleRequest(
   request: Request,
@@ -15,15 +13,13 @@ export default function handleRequest(
     <RemixServer context={remixContext} url={request.url} />
   );
 
-  const html = markup.replace(
-    "<head>",
-    `<head>${getSSRStyles(markup, server)}`
-  );
-
   responseHeaders.set("Content-Type", "text/html");
 
-  return new Response("<!DOCTYPE html>" + html, {
-    status: responseStatusCode,
-    headers: responseHeaders,
-  });
+  return new Response(
+    "<!DOCTYPE html>" + injectStylesIntoStaticMarkup(markup),
+    {
+      status: responseStatusCode,
+      headers: responseHeaders,
+    }
+  );
 }
